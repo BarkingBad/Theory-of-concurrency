@@ -1,5 +1,4 @@
-import java.util.HashMap;
-import java.util.Map;
+package lab2.src;
 
 class Semafor {
     private boolean _stan = true;
