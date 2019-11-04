@@ -39,10 +39,7 @@ class Producer extends Thread {
 
     public void run() {
         for (int i = 0; i < 100; ++i) {
-            boolean res = _buf.put(i);
-            if(res == false) {
-                i--;
-            }
+            _buf.put(i);
         }
     }
 }
@@ -57,12 +54,7 @@ class Consumer extends Thread {
 
     public void run() {
         for (int i = 0; i < 100; ++i) {
-            int res = _buf.get();
-            if(res == -1) {
-                i--;
-            } else {
-                System.out.println(res);
-            }
+            System.out.println(_buf.get());
         }
     }
 }
@@ -83,18 +75,15 @@ class Buffer {
         return iterator + 1 < _size;
     }
 
-    public boolean put(int i) {
-        boolean res;
+    public void put(int i) {
         semafor.P();
-        if (!canPut()) {
-            res = false;
-        } else {
-            res = true;
-            iterator++;
-            buffer[iterator] = i;
+        while (!canPut()) {
+            semafor.V();
+            semafor.P();
         }
+        iterator++;
+        buffer[iterator] = i;
         semafor.V();
-        return res;
     }
 
     private boolean canGet() {
@@ -102,15 +91,13 @@ class Buffer {
     }
 
     public int get() {
-        int res;
         semafor.P();
-
-        if (!canGet()) {
-            res = -1;
-        } else {
-            res = buffer[iterator];
-            iterator--;
+        while (!canGet()) {
+            semafor.V();
+            semafor.P();
         }
+        int res = buffer[iterator];
+        iterator--;
         semafor.V();
         return res;
     }
